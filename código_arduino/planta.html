@@ -4,7 +4,7 @@
     <meta charset="latin-1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle Arduino e Plantas</title>
-    <link rel="shortcut icon" type="imagex/svg" href="https://www.svgrepo.com/show/484168/cannabis-leaf.svg">
+    <link rel="shortcut icon" type="imagex/png" href="https://images.icon-icons.com/2283/PNG/512/nature_plants_plant_icon_141137.png">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -135,23 +135,27 @@
                 <p>umidade do solo:</p>
                 <span>Ideal {umidade_ideal}<br/></span> 
                 <span>Atual {umidade_atual}</span>
+                <span>Tipo de irrigação: drip</span>
+                <span>Tempo estimado: ativado</span>
                 <button onclick="toggleLED()">Regar Planta 1</button>
             </div>
             <div class="control-item">
                 <h3>{Nome da planta}: {tipo de planta}</h3>
-                <div class="controle-umidade">
-                    <p>umidade do solo:</p>
-                    <span>Ideal {umidade_ideal}<br/></span> 
-                    <span>Atual {umidade_atual}</span>
-                    <button onclick="readSensor()">Regar Planta 2</button>
-                </div>
+                <p>umidade do solo:</p>
+                <span>Ideal {umidade_ideal}<br/></span> 
+                <span>Atual {umidade_atual}</span>
+                <span>Tipo de irrigação: agendado</span>
+                <span>Tempo estimado: 2h</span>
+                <button onclick="toggleLED()">Regar Planta 1</button>
             </div>
             <div class="control-item">
                 <h3>{Nome da planta}: {tipo de planta}</h3>
                 <p>umidade do solo:</p>
-                <span>Ideal {umidade_ideal}</span> 
+                <span>Ideal {umidade_ideal}<br/></span> 
                 <span>Atual {umidade_atual}</span>
-                <button onclick="getWeather()">Regar Planta 3</button>
+                <span>Tipo de irrigação: agendado</span>
+                <span>Tempo estimado: 2 dias</span>
+                <button onclick="toggleLED()">Regar Planta 1</button>
             </div>
         </div>
         <div class="dropdown-container">
@@ -168,8 +172,8 @@
                 <button onclick="submitPlantName()">Enviar</button>
             </div>
         </div>
-        <!-- <div id="response">Resposta: Aguardando...</div>
-        <div id="weather">Clima: Aguardando...</div> -->
+        <div id="response">Resposta: Aguardando...</div>
+        <!-- <div id="weather">Clima: Aguardando...</div> --> 
     </div>
     
     <div class="container">

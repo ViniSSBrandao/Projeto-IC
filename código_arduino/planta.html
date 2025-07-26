@@ -119,11 +119,6 @@
             text-align: center;
             font-weight: bold;
         }
-        #weather {
-            margin-top: 20px;
-            text-align: center;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -146,7 +141,7 @@
                 <span>Atual {umidade_atual}</span>
                 <span>Tipo de irrigação: agendado</span>
                 <span>Tempo estimado: 2h</span>
-                <button onclick="toggleLED()">Regar Planta 1</button>
+                <button onclick="toggleLED()">Regar Planta 2</button>
             </div>
             <div class="control-item">
                 <h3>{Nome da planta}: {tipo de planta}</h3>
@@ -155,7 +150,7 @@
                 <span>Atual {umidade_atual}</span>
                 <span>Tipo de irrigação: agendado</span>
                 <span>Tempo estimado: 2 dias</span>
-                <button onclick="toggleLED()">Regar Planta 1</button>
+                <button onclick="toggleLED()">Regar Planta 3</button>
             </div>
         </div>
         <div class="dropdown-container">
@@ -173,7 +168,6 @@
             </div>
         </div>
         <div id="response">Resposta: Aguardando...</div>
-        <!-- <div id="weather">Clima: Aguardando...</div> --> 
     </div>
     
     <div class="container">
@@ -199,8 +193,8 @@
         </div>
     </div>
     <script>
-        const arduinoIP = 'http://192.168.1.100'; // Substitua pelo IP do ESP8266
-        
+        const arduinoIP = 'http://localhost:3000'; // Substitua pelo IP do ESP8266
+
         async function toggleLED() {
             try {
                 const response = await fetch(`${arduinoIP}/toggleLED`, { method: 'POST' });

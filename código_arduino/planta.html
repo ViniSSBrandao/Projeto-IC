@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="latin-1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Arduino e Plantas</title>
+    <link rel="shortcut icon" type="imagex/svg" href="https://www.svgrepo.com/show/484168/cannabis-leaf.svg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 { text-align: center; color: #0066cc; }
+        .control-panel {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .control-item {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        .controle-umidade{
+            display: flex;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #0066cc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #0052a3; }
+        .informacao {
+            margin: 5%;
+            width: 90%;
+            height: 200px;
+            display: flex;
+            justify-content: space-between;
+            background-color: darkgreen;
+        }
+        .caixa-informacao {
+            background-color: aquamarine;
+            width: 33%;
+            height: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .dropdown-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .dropdown-menu {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-button {
+            background-color: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .dropdown-button:hover {
+            background-color: #0052a3;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 5px;
+        }
+        .dropdown-content button {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+        .dropdown-content button:hover {
+            background-color: #e0e0e0;
+        }
+        .dropdown-menu:hover .dropdown-content {
+            display: block;
+        }
+        .plant-name-container {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .plant-name-container input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #response {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        #weather {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Controle Arduino e Plantas</h1>
+        <div class="control-panel">
+            <div class="control-item">
+                <h3>{Nome da planta}: {tipo de planta}</h3>
+                <p>umidade do solo:</p>
+                <span>Ideal {umidade_ideal}<br/></span> 
+                <span>Atual {umidade_atual}</span>
+                <button onclick="toggleLED()">Regar Planta 1</button>
+            </div>
+            <div class="control-item">
+                <h3>{Nome da planta}: {tipo de planta}</h3>
+                <div class="controle-umidade">
+                    <p>umidade do solo:</p>
+                    <span>Ideal {umidade_ideal}<br/></span> 
+                    <span>Atual {umidade_atual}</span>
+                    <button onclick="readSensor()">Regar Planta 2</button>
+                </div>
+            </div>
+            <div class="control-item">
+                <h3>{Nome da planta}: {tipo de planta}</h3>
+                <p>umidade do solo:</p>
+                <span>Ideal {umidade_ideal}</span> 
+                <span>Atual {umidade_atual}</span>
+                <button onclick="getWeather()">Regar Planta 3</button>
+            </div>
+        </div>
+        <div class="dropdown-container">
+            <div class="dropdown-menu">
+                <button class="dropdown-button">Trocar o tipo de planta:</button>
+                <div class="dropdown-content">
+                    <button onclick="showPlantNameInput('Planta 1')">Planta 1</button>
+                    <button onclick="showPlantNameInput('Planta 2')">Planta 2</button>
+                    <button onclick="showPlantNameInput('Planta 3')">Planta 3</button>
+                </div>
+            </div>
+            <div class="plant-name-container" id="plant-name-container">
+                <input type="text" id="plant-name-input" placeholder="Digite o nome da planta">
+                <button onclick="submitPlantName()">Enviar</button>
+            </div>
+        </div>
+        <!-- <div id="response">Resposta: Aguardando...</div>
+        <div id="weather">Clima: Aguardando...</div> -->
+    </div>
+    
+    <div class="container">
+        <div class="control-item">
+            <h3>Informações</h3>
+            <div class="informacao">
+                <div class="caixa-informacao">
+                    <div>
+                        Nível do reservatório
+                    </div>
+                </div>
+                <div class="caixa-informacao">
+                    <div>
+                        Luminosidade
+                    </div>
+                </div>
+                <div class="caixa-informacao">
+                    <div>
+                        Temperatura
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const arduinoIP = 'http://192.168.1.100'; // Substitua pelo IP do ESP8266
+        const weatherAPI = 'https://api.openweathermap.org/data/2.5/weather?q=Sao%20Paulo,BR&appid=SUA_CHAVE_API&units=metric&lang=pt';
+
+        async function toggleLED() {
+            try {
+                const response = await fetch(`${arduinoIP}/toggleLED`, { method: 'POST' });
+                const data = await response.json();
+                document.getElementById('response').innerText = `Resposta: ${data.message}`;
+            } catch (error) {
+                document.getElementById('response').innerText = 'Erro: Não foi possível conectar ao Arduino';
+            }
+        }
+
+        async function readSensor() {
+            try {
+                const response = await fetch(`${arduinoIP}/readSensor`);
+                const data = await response.json();
+                document.getElementById('response').innerText = `Sensor: ${data.value}`;
+            } catch (error) {
+                document.getElementById('response').innerText = 'Erro: Não foi possível ler o sensor';
+            }
+        }
+
+        async function getWeather() {
+            try {
+                const response = await fetch(weatherAPI);
+                const data = await response.json();
+                if (data.cod === 200) {
+                    document.getElementById('weather').innerText = `Clima: ${data.main.temp}°C, ${data.weather[0].description}`;
+                } else {
+                    document.getElementById('weather').innerText = 'Erro: Cidade não encontrada';
+                }
+            } catch (error) {
+                document.getElementById('weather').innerText = 'Erro: Não foi possível obter dados de clima';
+            }
+        }
+
+        let selectedPlant = '';
+
+        function showPlantNameInput(plant) {
+            selectedPlant = plant;
+            document.getElementById('plant-name-container').style.display = 'block';
+            document.getElementById('plant-name-input').value = '';
+            document.getElementById('response').innerText = `Resposta: Aguardando nome para ${plant}...`;
+        }
+
+        async function submitPlantName() {
+            const plantName = document.getElementById('plant-name-input').value;
+            if (!plantName) {
+                document.getElementById('response').innerText = 'Erro: Por favor, insira um nome para a planta';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${arduinoIP}/setPlantName`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plant: selectedPlant, name: plantName })
+                });
+                const data = await response.json();
+                document.getElementById('response').innerText = `Resposta: ${data.message}`;
+                document.getElementById('plant-name-container').style.display = 'none';
+            } catch (error) {
+                document.getElementById('response').innerText = 'Erro: Não foi possível enviar o nome da planta';
+            }
+        }
+    </script>
+</body>
+</html>

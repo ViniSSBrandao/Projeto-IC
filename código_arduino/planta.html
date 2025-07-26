@@ -200,8 +200,7 @@
     </div>
     <script>
         const arduinoIP = 'http://192.168.1.100'; // Substitua pelo IP do ESP8266
-        const weatherAPI = 'https://api.openweathermap.org/data/2.5/weather?q=Sao%20Paulo,BR&appid=SUA_CHAVE_API&units=metric&lang=pt';
-
+        
         async function toggleLED() {
             try {
                 const response = await fetch(`${arduinoIP}/toggleLED`, { method: 'POST' });
@@ -219,20 +218,6 @@
                 document.getElementById('response').innerText = `Sensor: ${data.value}`;
             } catch (error) {
                 document.getElementById('response').innerText = 'Erro: Não foi possível ler o sensor';
-            }
-        }
-
-        async function getWeather() {
-            try {
-                const response = await fetch(weatherAPI);
-                const data = await response.json();
-                if (data.cod === 200) {
-                    document.getElementById('weather').innerText = `Clima: ${data.main.temp}°C, ${data.weather[0].description}`;
-                } else {
-                    document.getElementById('weather').innerText = 'Erro: Cidade não encontrada';
-                }
-            } catch (error) {
-                document.getElementById('weather').innerText = 'Erro: Não foi possível obter dados de clima';
             }
         }
 

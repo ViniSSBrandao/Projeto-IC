@@ -33,32 +33,44 @@ const plants = {
 let dynamicData = {
     'Planta 1': {
         currentHumidity: 55,
-        timeToIrrigation: 12
+        timeToIrrigation: 12.0,
+        isSuitableToWater: true
     },
     'Planta 2': {
         currentHumidity: 65,
-        timeToIrrigation: 8
+        timeToIrrigation: 8.0,
+        isSuitableToWater: true
     },
     'Planta 3': {
         currentHumidity: 25,
-        timeToIrrigation: 24
+        timeToIrrigation: 24.0,
+        isSuitableToWater: false
     }
 };
 
 // Mocked environmental data
 let environmentalData = {
-    reservoirLevel: 80,
+    reservoirLevel: 'Cheio',
+    pumpStatus: 'Desligada',
     luminosity: 500,
     temperature: 25,
     atmosphericHumidity: 60
 };
+
+// Format time to HH:mm
+function formatTime(hours) {
+    const totalMinutes = Math.round(hours * 60);
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
 
 // Simulate dynamic data updates
 function updateDynamicData() {
     Object.keys(dynamicData).forEach(plant => {
         // Simulate slight changes in humidity (+/- 5%)
         dynamicData[plant].currentHumidity = Math.max(0, Math.min(100, 
-            dynamicData[plant].currentHumidity + (Math.random() * 10 - 5)
+            Math.round(dynamicData[plant].currentHumidity + (Math.random() * 10 - 5))
         ));
         // Simulate time to irrigation decreasing (reset to 24h if below 0)
         dynamicData[plant].timeToIrrigation = Math.max(0, 
@@ -69,18 +81,25 @@ function updateDynamicData() {
         }
     });
     // Simulate environmental data changes
-    environmentalData.reservoirLevel = Math.max(0, Math.min(100, 
-        environmentalData.reservoirLevel + (Math.random() * 2 - 1)
-    ));
-    environmentalData.luminosity = Math.max(0, Math.min(1000, 
+    environmentalData.luminosity = Math.round(Math.max(0, Math.min(1000, 
         environmentalData.luminosity + (Math.random() * 50 - 25)
-    ));
-    environmentalData.temperature = Math.max(15, Math.min(35, 
+    )));
+    // Update per-plant watering suitability (suitable if luminosity is between 200 and 800 lx)
+    Object.keys(dynamicData).forEach(plant => {
+        dynamicData[plant].isSuitableToWater = environmentalData.luminosity >= 200 && environmentalData.luminosity <= 800;
+    });
+    environmentalData.temperature = Math.round(Math.max(15, Math.min(35, 
         environmentalData.temperature + (Math.random() * 2 - 1)
-    ));
-    environmentalData.atmosphericHumidity = Math.max(0, Math.min(100, 
+    )));
+    environmentalData.atmosphericHumidity = Math.round(Math.max(0, Math.min(100, 
         environmentalData.atmosphericHumidity + (Math.random() * 10 - 5)
+    )));
+    // Simulate reservoir level (binary: Cheio if > 20%, Vazio otherwise)
+    const reservoirNumeric = environmentalData.reservoirLevel === 'Cheio' ? 80 : 10;
+    const newReservoirNumeric = Math.max(0, Math.min(100, 
+        reservoirNumeric + (Math.random() * 10 - 5)
     ));
+    environmentalData.reservoirLevel = newReservoirNumeric > 20 ? 'Cheio' : 'Vazio';
 }
 
 // Update dynamic data every 30 seconds
@@ -101,7 +120,11 @@ app.get('/getDynamicData', (req, res) => {
     if (!plant || !dynamicData[plant]) {
         return res.status(400).json({ message: `Plant ${plant} not found` });
     }
-    res.json(dynamicData[plant]);
+    res.json({
+        currentHumidity: dynamicData[plant].currentHumidity,
+        timeToIrrigation: formatTime(dynamicData[plant].timeToIrrigation),
+        isSuitableToWater: dynamicData[plant].isSuitableToWater
+    });
 });
 
 // Get environmental data
@@ -116,9 +139,14 @@ app.post('/toggleLED', (req, res) => {
         return res.status(400).json({ message: `Plant ${plant} not found` });
     }
     console.log(`Toggling LED for ${plant}`);
-    // Simulate irrigation by increasing current humidity
+    // Simulate irrigation by increasing current humidity and setting pump status
     dynamicData[plant].currentHumidity = Math.min(100, dynamicData[plant].currentHumidity + 10);
-    dynamicData[plant].timeToIrrigation = 24; // Reset time to irrigation
+    dynamicData[plant].timeToIrrigation = 24;
+    environmentalData.pumpStatus = 'Operando';
+    // Simulate pump turning off after 5 seconds
+    setTimeout(() => {
+        environmentalData.pumpStatus = 'Desligada';
+    }, 5000);
     res.json({ message: `Irrigation toggled for ${plant}` });
 });
 

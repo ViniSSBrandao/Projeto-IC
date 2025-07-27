@@ -13,7 +13,7 @@
             background-color: #f4f4f4;
         }
         .container {
-            max-width: 800px;
+            max-width: 90vw;
             margin: 0 auto;
             background: #fff;
             padding: 20px;
@@ -59,6 +59,15 @@
             height: 100%;
             padding: 5px;
             box-sizing: border-box;
+        }
+        .caixa-reservatorio {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .reservatorio-vazio {
+            background-color: #ff4d4d;
+            color: white;
         }
         .dropdown-container {
             margin-top: 20px;
@@ -127,30 +136,33 @@
         <div class="control-panel">
             <div class="control-item" id="plant1">
                 <h3 id="plant1-name">Planta 1: Carregando...</h3>
-                <p>Umidade do solo:</p>
-                <span id="plant1-ideal-humidity">Ideal: Carregando...</span><br/>
+                <span>Umidade do solo:</span>
+                <span style="margin-right: 5px;" id="plant1-ideal-humidity">Ideal: Carregando...</span>
                 <span id="plant1-current-humidity">Atual: Carregando...</span><br/>
                 <span id="plant1-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
                 <span id="plant1-time-to-irrigation">Tempo estimado: Carregando...</span><br/>
-                <div class="water-plant-btn"><button onclick="toggleLED('Planta 1')">Regar Planta 1</button></div>
+                <span id="plant1-suitable-to-water">Adequado para regar: Carregando...</span><br/><br/>
+                <button onclick="toggleLED('Planta 1')">Regar Planta 1</button>
             </div>
             <div class="control-item" id="plant2">
                 <h3 id="plant2-name">Planta 2: Carregando...</h3>
-                <p>Umidade do solo:</p>
-                <span id="plant2-ideal-humidity">Ideal: Carregando...</span><br/>
+                <span>Umidade do solo:</span>
+                <span style="margin-right: 5px;" id="plant2-ideal-humidity">Ideal: Carregando...</span>
                 <span id="plant2-current-humidity">Atual: Carregando...</span><br/>
                 <span id="plant2-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
                 <span id="plant2-time-to-irrigation">Tempo estimado: Carregando...</span><br/>
-                <div class="water-plant-btn"><button onclick="toggleLED('Planta 2')">Regar Planta 2</button></div>
+                <span id="plant2-suitable-to-water">Adequado para regar: Carregando...</span><br/><br/>
+                <button onclick="toggleLED('Planta 2')">Regar Planta 2</button>
             </div>
             <div class="control-item" id="plant3">
                 <h3 id="plant3-name">Planta 3: Carregando...</h3>
-                <p>Umidade do solo:</p>
-                <span id="plant3-ideal-humidity">Ideal: Carregando...</span><br/>
+                <span>Umidade do solo:</span>
+                <span style="margin-right: 5px;" id="plant3-ideal-humidity">Ideal: Carregando...</span>
                 <span id="plant3-current-humidity">Atual: Carregando...</span><br/>
                 <span id="plant3-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
                 <span id="plant3-time-to-irrigation">Tempo estimado: Carregando...</span><br/>
-                <div class="water-plant-btn"><button onclick="toggleLED('Planta 3')">Regar Planta 3</button></div>
+                <span id="plant3-suitable-to-water">Adequado para regar: Carregando...</span><br/><br/>
+                <button onclick="toggleLED('Planta 3')">Regar Planta 3</button>
             </div>
         </div>
         <div class="dropdown-container">
@@ -167,21 +179,22 @@
                 <button onclick="submitPlantName()">Enviar</button>
             </div>
         </div>
-        <div id="response">Resposta: Aguardando...</div>
+        <div id="response"><!--Resposta: Aguardando...--></div>
     </div>
     
     <div class="container">
         <div class="control-item">
             <h3>Informações</h3>
             <div class="informacao">
-                <div class="caixa-informacao">
-                    <div id="reservoir-level">Nível do reservatório: Carregando...</div>
+                <div class="caixa-informacao caixa-reservatorio">
+                    <div id="reservatorio-nivel">Nível do reservatório: Carregando...</div>
+                    <div id="bomba-status">Status da bomba: Carregando...</div>
                 </div>
                 <div class="caixa-informacao">
-                    <div id="luminosity">Luminosidade: Carregando...</div>
+                    <div id="luminosidade">Luminosidade: Carregando...</div>
                 </div>
                 <div class="caixa-informacao">
-                    <div id="temperature-humidity">Temperatura e umidade atmosférica: Carregando...</div>
+                    <div id="temperatura-umidade">Temperatura e umidade atmosférica: Carregando...</div>
                 </div>
             </div>
         </div>
@@ -232,13 +245,17 @@
                 const data = await response.json();
                 const plantIndex = plants.indexOf(plant) + 1;
                 document.getElementById(`plant${plantIndex}-current-humidity`).innerText = `Atual: ${data.currentHumidity}%`;
-                document.getElementById(`plant${plantIndex}-time-to-irrigation`).innerText = `Tempo estimado: ${data.timeToIrrigation} horas`;
+                document.getElementById(`plant${plantIndex}-time-to-irrigation`).innerText = `Tempo estimado: ${data.timeToIrrigation}`;
+                document.getElementById(`plant${plantIndex}-suitable-to-water`).innerText = `Adequado para regar: ${data.isSuitableToWater ? 'Sim' : 'Não'}`;
                 if (plant === 'Planta 1') { // Only fetch environmental data once
                     const envResponse = await fetch(`${arduinoIP}/getEnvironmentalData`);
                     const envData = await envResponse.json();
-                    document.getElementById('reservoir-level').innerText = `Nível do reservatório: ${envData.reservoirLevel}%`;
-                    document.getElementById('luminosity').innerText = `Luminosidade: ${envData.luminosity} lx`;
-                    document.getElementById('temperature-humidity').innerText = `Temperatura: ${envData.temperature}°C, Umidade: ${envData.atmosphericHumidity}%`;
+                    const reservatorioDiv = document.getElementById('reservatorio-nivel');
+                    reservatorioDiv.innerText = `Nível do reservatório: ${envData.reservoirLevel}`;
+                    reservatorioDiv.classList.toggle('reservatorio-vazio', envData.reservoirLevel === 'Vazio');
+                    document.getElementById('bomba-status').innerText = `Status da bomba: ${envData.pumpStatus}`;
+                    document.getElementById('luminosidade').innerText = `Luminosidade: ${envData.luminosity} lx`;
+                    document.getElementById('temperatura-umidade').innerText = `Temperatura: ${envData.temperature}°C, Umidade: ${envData.atmosphericHumidity}%`;
                 }
             } catch (error) {
                 document.getElementById('response').innerText = `Erro: Não foi possível carregar dados dinâmicos da ${plant}`;

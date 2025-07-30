@@ -1,0 +1,25 @@
+prompt = f'''
+        Atue como um especialista em botânica. Sua tarefa é retornar dados sobre uma planta em um formato JSON estrito. Não adicione nenhuma explicação ou texto fora do JSON.
+
+        A planta é: "{plant_name}"
+
+        Se o texto fornecido não for um nome de planta conhecido (popular ou científico), retorne exatamente: {"erro": "Planta não encontrada"}.
+
+        Se for uma planta válida, forneça os seguintes dados:
+        - "luminosidade_ideal": Uma string descrevendo a luz ideal (ex: "Luz indireta brilhante" ou "Sol pleno").
+        - "umidade_ar_ideal": Uma string com a faixa de umidade do ar em porcentagem (ex: "60-80%").
+        - "metodo_irrigacao_ideal": Responda apenas com "gotejamento" ou "agendado".
+        - "horarios_umidade_solo": Um objeto JSON com até 4 horários chave e a umidade do solo alvo em porcentagem. Use o formato {"HH:MM": "%", "HH:MM": "%", ...}. Isso indica os momentos em que o solo deve atingir aquela umidade após a rega e os momentos em que pode estar mais seco.
+        - "temperatura_ideal_celsius": Uma string com a faixa de temperatura ideal em graus Celsius (ex: "18-25°C").
+        - "tipo_planta": Uma string com a classificação da planta (ex: "Folhagem", "Hortaliça", "Bulbo", "Suculenta").
+
+        O JSON de saída deve ser exatamente neste formato:
+        {
+        "luminosidade_ideal": "...",
+        "umidade_ar_ideal": "...",
+        "metodo_irrigacao_ideal": "...",
+        "horarios_umidade_solo": {"06:00": "70%", "12:00": "50%", "18:00": "70%", "23:00": "40%"},
+        "temperatura_ideal_celsius": "...",
+        "tipo_planta": "..."
+}
+'''

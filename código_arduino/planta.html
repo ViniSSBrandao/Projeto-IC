@@ -48,17 +48,18 @@
         .informacao {
             margin: 5%;
             width: 90%;
-            height: 200px;
             display: flex;
             justify-content: space-between;
-            background-color: darkgreen;
+            gap: 20px; /* Matches control-panel gap */
         }
         .caixa-informacao {
-            background-color: aquamarine;
+            background: #e9ecef; /* Matches control-item background */
             width: 33%;
-            height: 100%;
-            padding: 5px;
+            padding: 10px; /* Matches control-item padding */
             box-sizing: border-box;
+            border-radius: 5px; /* Matches control-item border-radius */
+            text-align: center; /* Matches control-item text alignment */
+            
         }
         .caixa-reservatorio {
             display: flex;
@@ -140,18 +141,16 @@
                 <span style="margin-right: 5px;" id="plant1-ideal-humidity">Ideal: Carregando...</span>
                 <span id="plant1-current-humidity">Atual: Carregando...</span><br/>
                 <span id="plant1-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
-                <span id="plant1-time-to-irrigation">Tempo estimado: Carregando...</span><br/>
-                <span id="plant1-suitable-to-water">Adequado para regar: Carregando...</span><br/><br/>
+                <span id="plant1-time-to-irrigation">Tempo estimado: Carregando...</span><br/><br/>
                 <button onclick="toggleLED('Planta 1')">Regar Planta 1</button>
             </div>
-            <div class="control-item" id="plant2">
+            <!-- <div class="control-item" id="plant2">
                 <h3 id="plant2-name">Planta 2: Carregando...</h3>
                 <span>Umidade do solo:</span>
                 <span style="margin-right: 5px;" id="plant2-ideal-humidity">Ideal: Carregando...</span>
                 <span id="plant2-current-humidity">Atual: Carregando...</span><br/>
                 <span id="plant2-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
-                <span id="plant2-time-to-irrigation">Tempo estimado: Carregando...</span><br/>
-                <span id="plant2-suitable-to-water">Adequado para regar: Carregando...</span><br/><br/>
+                <span id="plant2-time-to-irrigation">Tempo estimado: Carregando...</span><br/><br/>
                 <button onclick="toggleLED('Planta 2')">Regar Planta 2</button>
             </div>
             <div class="control-item" id="plant3">
@@ -160,18 +159,17 @@
                 <span style="margin-right: 5px;" id="plant3-ideal-humidity">Ideal: Carregando...</span>
                 <span id="plant3-current-humidity">Atual: Carregando...</span><br/>
                 <span id="plant3-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
-                <span id="plant3-time-to-irrigation">Tempo estimado: Carregando...</span><br/>
-                <span id="plant3-suitable-to-water">Adequado para regar: Carregando...</span><br/><br/>
+                <span id="plant3-time-to-irrigation">Tempo estimado: Carregando...</span><br/><br/>
                 <button onclick="toggleLED('Planta 3')">Regar Planta 3</button>
-            </div>
+            </div> -->
         </div>
         <div class="dropdown-container">
             <div class="dropdown-menu">
                 <button class="dropdown-button">Trocar o tipo de planta:</button>
                 <div class="dropdown-content">
                     <button onclick="showPlantNameInput('Planta 1')">Planta 1</button>
-                    <button onclick="showPlantNameInput('Planta 2')">Planta 2</button>
-                    <button onclick="showPlantNameInput('Planta 3')">Planta 3</button>
+                    <!-- <button onclick="showPlantNameInput('Planta 2')">Planta 2</button>
+                    <button onclick="showPlantNameInput('Planta 3')">Planta 3</button> -->
                 </div>
             </div>
             <div class="plant-name-container" id="plant-name-container">
@@ -179,7 +177,7 @@
                 <button onclick="submitPlantName()">Enviar</button>
             </div>
         </div>
-        <div id="response"><!--Resposta: Aguardando...--></div>
+        <div id="response"></div>
     </div>
     
     <div class="container">
@@ -191,18 +189,22 @@
                     <div id="bomba-status">Status da bomba: Carregando...</div>
                 </div>
                 <div class="caixa-informacao">
-                    <div id="luminosidade">Luminosidade: Carregando...</div>
+                    <div id="luminosidade" style="overflow: none;">Luminosidade: Carregando...</div>
+                    <div id="plant1-suitable-to-water">Planta 1 - Adequado para regar: Carregando...</div>
+                    <!-- <div id="plant2-suitable-to-water">Planta 2 - Adequado para regar: Carregando...</div> -->
+                    <!-- <div id="plant3-suitable-to-water">Planta 3 - Adequado para regar: Carregando...</div> -->
                 </div>
                 <div class="caixa-informacao">
-                    <div id="temperatura-umidade">Temperatura e umidade atmosférica: Carregando...</div>
+                    <div id="temperatura">Temperatura: Carregando...</div>
+                    <div id="umidade-atmosferica">Umidade atmosférica: Carregando...</div>
                 </div>
             </div>
         </div>
     </div>
     <script>
         const arduinoIP = 'http://localhost:3000'; // Substitua pelo IP do ESP8266
-        const plants = ['Planta 1', 'Planta 2', 'Planta 3'];
-        const updateInterval = 5000; // Update dynamic data every 30 seconds
+        const plants = ['Planta 1'];
+        const updateInterval = 5000; // Update dynamic data every 5 seconds
 
         // Queue for synchronous API requests
         let requestQueue = [];
@@ -246,7 +248,7 @@
                 const plantIndex = plants.indexOf(plant) + 1;
                 document.getElementById(`plant${plantIndex}-current-humidity`).innerText = `Atual: ${data.currentHumidity}%`;
                 document.getElementById(`plant${plantIndex}-time-to-irrigation`).innerText = `Tempo estimado: ${data.timeToIrrigation}`;
-                document.getElementById(`plant${plantIndex}-suitable-to-water`).innerText = `Adequado para regar: ${data.isSuitableToWater ? 'Sim' : 'Não'}`;
+                document.getElementById(`plant${plantIndex}-suitable-to-water`).innerText = `${plant} - Adequado para regar: ${data.isSuitableToWater ? 'Sim' : 'Não'}`;
                 if (plant === 'Planta 1') { // Only fetch environmental data once
                     const envResponse = await fetch(`${arduinoIP}/getEnvironmentalData`);
                     const envData = await envResponse.json();
@@ -255,7 +257,8 @@
                     reservatorioDiv.classList.toggle('reservatorio-vazio', envData.reservoirLevel === 'Vazio');
                     document.getElementById('bomba-status').innerText = `Status da bomba: ${envData.pumpStatus}`;
                     document.getElementById('luminosidade').innerText = `Luminosidade: ${envData.luminosity} lx`;
-                    document.getElementById('temperatura-umidade').innerText = `Temperatura: ${envData.temperature}°C, Umidade: ${envData.atmosphericHumidity}%`;
+                    document.getElementById('temperatura').innerText = `Temperatura: ${envData.temperature}°C`;
+                    document.getElementById('umidade-atmosferica').innerText = `Umidade atmosférica: ${envData.atmosphericHumidity}%`;
                 }
             } catch (error) {
                 document.getElementById('response').innerText = `Erro: Não foi possível carregar dados dinâmicos da ${plant}`;
@@ -325,7 +328,7 @@
         // Initialize
         loadInitialData();
         updateDynamicData(); // Initial dynamic data fetch
-        setInterval(updateDynamicData, updateInterval); // Update every 30 seconds
+        setInterval(updateDynamicData, updateInterval); // Update every 5 seconds
     </script>
 </body>
 </html>

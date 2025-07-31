@@ -1,1 +1,1 @@
-nodemon ./código_arduino/server.js
+nodemon ./código_app/server.js

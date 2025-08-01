@@ -4,6 +4,7 @@ import json
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # Carrega as variáveis de ambiente (sua chave de API) do arquivo .env
 load_dotenv()
@@ -39,6 +40,16 @@ app = FastAPI(
     title="API de Cuidados com Plantas (v2 com Sensores)",
     description="Fornece dados de cuidados para plantas, incluindo faixas de LUX, utilizando a API do Google Gemini.",
     version="2.0.0"
+)
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"], # Permite todos os métodos (GET, POST, etc.)
+    allow_headers=["*"], # Permite todos os cabeçalhos
 )
 
 # --- Função do Prompt ATUALIZADA ---

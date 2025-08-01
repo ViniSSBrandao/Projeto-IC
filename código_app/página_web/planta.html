@@ -1,75 +1,62 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="latin-1">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle Arduino e Plantas</title>
-    <link rel="shortcut icon" type="imagex/png" href="https://images.icon-icons.com/2283/PNG/512/nature_plants_plant_icon_141137.png">
+    <link rel="shortcut icon" type="image/png" href="https://images.icon-icons.com/2283/PNG/512/nature_plants_plant_icon_141137.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div id="popup-overlay" class="popup-overlay">
+        <div class="popup-content">
+            <button id="popup-close" class="popup-close-btn">&times;</button>
+            <h3>Dados da Planta (LLM)</h3>
+            <div id="popup-data"></div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>Controle Arduino e Plantas</h1>
         <div class="control-panel">
             <div class="control-item" id="plant1">
                 <h3 id="plant1-name">Planta 1: Carregando...</h3>
-                <span>Umidade do solo:</span>
-                <span style="margin-right: 5px;" id="plant1-ideal-humidity">Ideal: Carregando...</span>
-                <span id="plant1-current-humidity">Atual: Carregando...</span><br/>
+                <span>Umidade do solo Ideal:</span>
+                <span id="plant1-ideal-humidity">Carregando...</span><br/>
+                <span>Umidade do solo Atual:</span>
+                <span id="plant1-current-humidity">Carregando...</span><br/>
                 <span id="plant1-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
                 <span id="plant1-time-to-irrigation">Tempo estimado: Carregando...</span><br/><br/>
                 <button onclick="toggleLED('Planta 1')">Regar Planta 1</button>
             </div>
-            <!-- <div class="control-item" id="plant2">
-                <h3 id="plant2-name">Planta 2: Carregando...</h3>
-                <span>Umidade do solo:</span>
-                <span style="margin-right: 5px;" id="plant2-ideal-humidity">Ideal: Carregando...</span>
-                <span id="plant2-current-humidity">Atual: Carregando...</span><br/>
-                <span id="plant2-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
-                <span id="plant2-time-to-irrigation">Tempo estimado: Carregando...</span><br/><br/>
-                <button onclick="toggleLED('Planta 2')">Regar Planta 2</button>
             </div>
-            <div class="control-item" id="plant3">
-                <h3 id="plant3-name">Planta 3: Carregando...</h3>
-                <span>Umidade do solo:</span>
-                <span style="margin-right: 5px;" id="plant3-ideal-humidity">Ideal: Carregando...</span>
-                <span id="plant3-current-humidity">Atual: Carregando...</span><br/>
-                <span id="plant3-irrigation-type">Tipo de irrigação: Carregando...</span><br/>
-                <span id="plant3-time-to-irrigation">Tempo estimado: Carregando...</span><br/><br/>
-                <button onclick="toggleLED('Planta 3')">Regar Planta 3</button>
-            </div> -->
-        </div>
         <div class="dropdown-container">
             <div class="dropdown-menu">
                 <button class="dropdown-button">Trocar o tipo de planta:</button>
                 <div class="dropdown-content">
                     <button onclick="showPlantNameInput('Planta 1')">Planta 1</button>
-                    <!-- <button onclick="showPlantNameInput('Planta 2')">Planta 2</button>
-                    <button onclick="showPlantNameInput('Planta 3')">Planta 3</button> -->
-                </div>
+                    </div>
             </div>
             <div class="plant-name-container" id="plant-name-container">
-                <input type="text" id="plant-name-input" placeholder="Digite o nome da planta">
+                <input type="text" id="plant-name-input" placeholder="Digite o nome da planta (ex: Jiboia)">
                 <button onclick="submitPlantName()">Enviar</button>
             </div>
         </div>
-        <div id="response"></div>
+        <div id="response" class="response-box"></div>
     </div>
     
     <div class="container">
         <div class="control-item">
-            <h3>Informações</h3>
+            <h3>Informações Gerais</h3>
             <div class="informacao">
                 <div class="caixa-informacao caixa-reservatorio">
                     <div id="reservatorio-nivel">Nível do reservatório: Carregando...</div>
                     <div id="bomba-status">Status da bomba: Carregando...</div>
                 </div>
                 <div class="caixa-informacao">
-                    <div id="luminosidade" style="overflow: none;">Luminosidade: Carregando...</div>
+                    <div id="luminosidade">Luminosidade: Carregando...</div>
                     <div id="plant1-suitable-to-water">Planta 1 - Adequado para regar: Carregando...</div>
-                    <!-- <div id="plant2-suitable-to-water">Planta 2 - Adequado para regar: Carregando...</div> -->
-                    <!-- <div id="plant3-suitable-to-water">Planta 3 - Adequado para regar: Carregando...</div> -->
-                </div>
+                    </div>
                 <div class="caixa-informacao">
                     <div id="temperatura">Temperatura: Carregando...</div>
                     <div id="umidade-atmosferica">Umidade atmosférica: Carregando...</div>
@@ -77,134 +64,7 @@
             </div>
         </div>
     </div>
-    <script>
-        const arduinoIP = 'http://localhost:3000'; // Substitua pelo IP do ESP8266
-        const plants = ['Planta 1'];
-        const updateInterval = 5000; // Update dynamic data every 5 seconds
 
-        // Queue for synchronous API requests
-        let requestQueue = [];
-        let isProcessingQueue = false;
-
-        async function enqueueRequest(requestFn) {
-            requestQueue.push(requestFn);
-            if (!isProcessingQueue) {
-                processQueue();
-            }
-        }
-
-        async function processQueue() {
-            if (requestQueue.length === 0) {
-                isProcessingQueue = false;
-                return;
-            }
-            isProcessingQueue = true;
-            const requestFn = requestQueue.shift();
-            await requestFn();
-            setTimeout(processQueue, 100); // Small delay to prevent overwhelming the API
-        }
-
-        async function fetchPlantData(plant) {
-            try {
-                const response = await fetch(`${arduinoIP}/getPlantData?plant=${encodeURIComponent(plant)}`);
-                const data = await response.json();
-                const plantIndex = plants.indexOf(plant) + 1;
-                document.getElementById(`plant${plantIndex}-name`).innerText = `${data.name}: ${data.type}`;
-                document.getElementById(`plant${plantIndex}-ideal-humidity`).innerText = `Ideal: ${data.idealHumidity}%`;
-                document.getElementById(`plant${plantIndex}-irrigation-type`).innerText = `Tipo de irrigação: ${data.irrigationType}`;
-            } catch (error) {
-                document.getElementById('response').innerText = `Erro: Não foi possível carregar dados da ${plant}`;
-            }
-        }
-
-        async function fetchDynamicData(plant) {
-            try {
-                const response = await fetch(`${arduinoIP}/getDynamicData?plant=${encodeURIComponent(plant)}`);
-                const data = await response.json();
-                const plantIndex = plants.indexOf(plant) + 1;
-                document.getElementById(`plant${plantIndex}-current-humidity`).innerText = `Atual: ${data.currentHumidity}%`;
-                document.getElementById(`plant${plantIndex}-time-to-irrigation`).innerText = `Tempo estimado: ${data.timeToIrrigation}`;
-                document.getElementById(`plant${plantIndex}-suitable-to-water`).innerText = `${plant} - Adequado para regar: ${data.isSuitableToWater ? 'Sim' : 'Não'}`;
-                if (plant === 'Planta 1') { // Only fetch environmental data once
-                    const envResponse = await fetch(`${arduinoIP}/getEnvironmentalData`);
-                    const envData = await envResponse.json();
-                    const reservatorioDiv = document.getElementById('reservatorio-nivel');
-                    reservatorioDiv.innerText = `Nível do reservatório: ${envData.reservoirLevel}`;
-                    reservatorioDiv.classList.toggle('reservatorio-vazio', envData.reservoirLevel === 'Vazio');
-                    document.getElementById('bomba-status').innerText = `Status da bomba: ${envData.pumpStatus}`;
-                    document.getElementById('luminosidade').innerText = `Luminosidade: ${envData.luminosity} lx`;
-                    document.getElementById('temperatura').innerText = `Temperatura: ${envData.temperature}°C`;
-                    document.getElementById('umidade-atmosferica').innerText = `Umidade atmosférica: ${envData.atmosphericHumidity}%`;
-                }
-            } catch (error) {
-                document.getElementById('response').innerText = `Erro: Não foi possível carregar dados dinâmicos da ${plant}`;
-            }
-        }
-
-        async function toggleLED(plant) {
-            enqueueRequest(async () => {
-                try {
-                    const response = await fetch(`${arduinoIP}/toggleLED?plant=${encodeURIComponent(plant)}`, { method: 'POST' });
-                    const data = await response.json();
-                    document.getElementById('response').innerText = `Resposta: ${data.message}`;
-                } catch (error) {
-                    document.getElementById('response').innerText = `Erro: Não foi possível conectar ao Arduino para ${plant}`;
-                }
-            });
-        }
-
-        async function submitPlantName() {
-            const plantName = document.getElementById('plant-name-input').value;
-            if (!plantName) {
-                document.getElementById('response').innerText = 'Erro: Por favor, insira um nome para a planta';
-                return;
-            }
-
-            enqueueRequest(async () => {
-                try {
-                    const response = await fetch(`${arduinoIP}/setPlantName`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ plant: selectedPlant, name: plantName })
-                    });
-                    const data = await response.json();
-                    document.getElementById('response').innerText = `Resposta: ${data.message}`;
-                    document.getElementById('plant-name-container').style.display = 'none';
-                    // Refresh static data for the updated plant
-                    await fetchPlantData(selectedPlant);
-                } catch (error) {
-                    document.getElementById('response').innerText = 'Erro: Não foi possível enviar o nome da planta';
-                }
-            });
-        }
-
-        let selectedPlant = '';
-
-        function showPlantNameInput(plant) {
-            selectedPlant = plant;
-            document.getElementById('plant-name-container').style.display = 'block';
-            document.getElementById('plant-name-input').value = '';
-            document.getElementById('response').innerText = `Resposta: Aguardando nome para ${plant}...`;
-        }
-
-        // Load static data for all plants on page load
-        function loadInitialData() {
-            plants.forEach(plant => {
-                enqueueRequest(() => fetchPlantData(plant));
-            });
-        }
-
-        // Periodically update dynamic data
-        function updateDynamicData() {
-            plants.forEach(plant => {
-                enqueueRequest(() => fetchDynamicData(plant));
-            });
-        }
-
-        // Initialize
-        loadInitialData();
-        updateDynamicData(); // Initial dynamic data fetch
-        setInterval(updateDynamicData, updateInterval); // Update every 5 seconds
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>

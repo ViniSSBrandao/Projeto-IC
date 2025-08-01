@@ -36,7 +36,6 @@ async function processQueue() {
     setTimeout(processQueue, 100); // Pequeno delay entre requisições
 }
 
-
 // --- LÓGICA DO POP-UP ---
 function showPopup(contentHtml) {
     popupData.innerHTML = contentHtml;
@@ -49,18 +48,13 @@ function hidePopup() {
 
 popupCloseBtn.addEventListener('click', hidePopup);
 popupOverlay.addEventListener('click', (event) => {
-    // Fecha o pop-up se clicar fora da caixa de conteúdo
     if (event.target === popupOverlay) {
         hidePopup();
     }
 });
 
-
 // --- LÓGICA DE INTERAÇÃO COM APIS ---
 
-/**
- * NOVO: Orquestra a busca de dados da LLM, atualização da UI e envio para o Arduino.
- */
 async function submitPlantName() {
     const plantName = plantNameInput.value.trim();
     if (!plantName) {
@@ -72,29 +66,18 @@ async function submitPlantName() {
     plantNameContainer.style.display = 'none';
 
     try {
-        // 1. Chama a API da LLM
         const response = await fetch(`${llmApiUrl}/plant-care/${plantName}`);
-        console.log(response)
         if (!response.ok) {
-            console.log(response)
             const errorData = await response.json();
-            throw new Error(errorData.detail || 'Erro ao buscar dados da planta.');
+            throw new Error(errorData.erro || 'Erro ao buscar dados da planta.');
         }
 
         const plantData = await response.json();
-
-        // 2. Mostra o pop-up com o JSON formatado
         const formattedJson = `<pre>${JSON.stringify(plantData, null, 2)}</pre>`;
         showPopup(formattedJson);
-
-        // 3. Atualiza a interface do usuário com os novos dados
-        updatePlantCardUI(selectedPlant, plantData, plantName);
-        
-        // 4. Envia os dados para o Arduino (coloca na fila)
+        updatePlantCardUI(selectedPlant, plantData);
         enqueueRequest(() => sendDataToArduino(selectedPlant, plantData));
-
-        responseDiv.innerText = `Dados de "${plantName}" atualizados e enviados para o Arduino!`;
-
+        responseDiv.innerText = `Dados de "${plantData.nome_nome_cientifico}" atualizados e enviados para o Arduino!`;
     } catch (error) {
         console.error('Erro no processo de atualização da planta:', error);
         responseDiv.innerText = `Erro: ${error.message}`;
@@ -102,17 +85,12 @@ async function submitPlantName() {
     }
 }
 
-/**
- * NOVO: Envia os dados obtidos da LLM para o Arduino.
- * IMPORTANTE: Você precisará criar um endpoint no seu Arduino que aceite um POST em '/setPlantData'.
- */
 async function sendDataToArduino(plantId, data) {
     console.log(`Enviando para o Arduino (${plantId}):`, data);
     try {
         const response = await fetch(`${arduinoIP}/setPlantData`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // Enviamos o identificador da planta e o objeto de dados
             body: JSON.stringify({ plant: plantId, data: data })
         });
         const responseData = await response.json();
@@ -123,25 +101,28 @@ async function sendDataToArduino(plantId, data) {
     }
 }
 
-/**
- * ATUALIZADO: Atualiza o card da planta na tela com os dados da LLM.
- */
-function updatePlantCardUI(plantId, data, plantName) {
+function updatePlantCardUI(plantId, data) {
     const plantIndex = plants.indexOf(plantId) + 1;
-    
-    document.getElementById(`plant${plantIndex}-name`).innerText = `${plantName}: ${data.tipo_planta}`;
-    
-    // Pega o maior valor de umidade do solo dos horários como referência
+    document.getElementById(`plant${plantIndex}-name`).innerText = data.nome_nome_cientifico;
     const umidadeIdeal = Object.values(data.horarios_umidade_solo)[0] || 'N/A';
     document.getElementById(`plant${plantIndex}-ideal-humidity`).innerText = `${umidadeIdeal}`;
-
     document.getElementById(`plant${plantIndex}-irrigation-type`).innerText = `Tipo de irrigação: ${data.metodo_irrigacao_ideal}`;
 }
 
+// --- CONTROLE DO LED UV ---
+async function toggleUVLED(plant) {
+    enqueueRequest(async () => {
+        try {
+            const response = await fetch(`${arduinoIP}/toggleUVLED?plant=${encodeURIComponent(plant)}`, { method: 'POST' });
+            const data = await response.json();
+            responseDiv.innerText = `Resposta do Arduino (LED UV): ${data.message}`;
+        } catch (error) {
+            responseDiv.innerText = `Erro: Não foi possível conectar ao Arduino para o LED UV de ${plant}`;
+        }
+    });
+}
 
 // --- FUNÇÕES ORIGINAIS (Adaptadas e Mantidas) ---
-
-// Mostra o campo para digitar o nome da planta
 function showPlantNameInput(plant) {
     selectedPlant = plant;
     plantNameContainer.style.display = 'block';
@@ -150,7 +131,6 @@ function showPlantNameInput(plant) {
     responseDiv.innerText = `Digite o nome para a ${plant} e clique em Enviar.`;
 }
 
-// Controla o botão de rega manual
 async function toggleLED(plant) {
     enqueueRequest(async () => {
         try {
@@ -163,7 +143,6 @@ async function toggleLED(plant) {
     });
 }
 
-// Busca dados dinâmicos do Arduino (umidade atual, etc.)
 async function fetchDynamicData() {
     for (const plant of plants) {
         await enqueueRequest(async () => {
@@ -175,7 +154,6 @@ async function fetchDynamicData() {
                 document.getElementById(`plant${plantIndex}-time-to-irrigation`).innerText = `Tempo estimado: ${data.timeToIrrigation}`;
                 document.getElementById(`plant${plantIndex}-suitable-to-water`).innerText = `${plant} - Adequado para regar: ${data.isSuitableToWater ? 'Sim' : 'Não'}`;
                 
-                // Busca dados ambientais apenas uma vez por ciclo para evitar requisições redundantes
                 if (plant === 'Planta 1') { 
                     const envResponse = await fetch(`${arduinoIP}/getEnvironmentalData`);
                     const envData = await envResponse.json();
@@ -184,26 +162,21 @@ async function fetchDynamicData() {
                     reservatorioDiv.classList.toggle('reservatorio-vazio', envData.reservoirLevel === 'Vazio');
                     document.getElementById('bomba-status').innerText = `Status da bomba: ${envData.pumpStatus}`;
                     document.getElementById('luminosidade').innerText = `Luminosidade: ${envData.luminosity} lx`;
+                    document.getElementById('uv-led-status').innerText = `Status do LED UV: ${envData.uvLedStatus ? 'Ligado' : 'Desligado'}`;
                     document.getElementById('temperatura').innerText = `Temperatura: ${envData.temperature}°C`;
                     document.getElementById('umidade-atmosferica').innerText = `Umidade atmosférica: ${envData.atmosphericHumidity}%`;
                 }
             } catch (error) {
-                // Não mostra erro aqui para não poluir a tela em caso de falha temporária
                 console.error(`Erro ao carregar dados dinâmicos da ${plant}`);
             }
         });
     }
 }
 
-// --- INICIALIZAÇÃO DA PÁGINA ---
 function initializeApp() {
-    // Busca os dados dinâmicos iniciais
     fetchDynamicData();
-    // Configura a atualização periódica
     setInterval(fetchDynamicData, updateInterval);
-    // Mensagem inicial
     responseDiv.innerText = 'Sistema pronto. Escolha uma planta para configurar.';
 }
 
-// Inicia a aplicação quando a página carrega
 initializeApp();

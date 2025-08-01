@@ -10,22 +10,34 @@ app.use(cors()); // Enable CORS for all routes
 // Mocked plant data (static)
 const plants = {
     'Planta 1': {
-        name: 'Rosa',
-        type: 'Flor',
-        idealHumidity: 60,
-        irrigationType: 'Gotejamento'
+        tipo_planta: 'Rosa (Rosa alba)',
+        metodo_irrigacao_ideal: 'Gotejamento',
+        horarios_umidade_solo: {
+            '00:00': 60,
+            '06:00': 60,
+            '12:00': 60,
+            '18:00': 60
+        }
     },
     'Planta 2': {
-        name: 'Manjericão',
-        type: 'Erva',
-        idealHumidity: 70,
-        irrigationType: 'Aspersão'
+        tipo_planta: 'Manjericão (Ocimum basilicum)',
+        metodo_irrigacao_ideal: 'Aspersão',
+        horarios_umidade_solo: {
+            '00:00': 70,
+            '06:00': 70,
+            '12:00': 70,
+            '18:00': 70
+        }
     },
     'Planta 3': {
-        name: 'Cacto',
-        type: 'Suculenta',
-        idealHumidity: 30,
-        irrigationType: 'Manual'
+        tipo_planta: 'Cacto (Cactaceae)',
+        metodo_irrigacao_ideal: 'Manual',
+        horarios_umidade_solo: {
+            '00:00': 30,
+            '06:00': 30,
+            '12:00': 30,
+            '18:00': 30
+        }
     }
 };
 
@@ -54,7 +66,8 @@ let environmentalData = {
     pumpStatus: 'Desligada',
     luminosity: 500,
     temperature: 25,
-    atmosphericHumidity: 60
+    atmosphericHumidity: 60,
+    uvLedStatus: false // Added UV LED status
 };
 
 // Format time to HH:mm
@@ -100,6 +113,8 @@ function updateDynamicData() {
         reservoirNumeric + (Math.random() * 10 - 5)
     ));
     environmentalData.reservoirLevel = newReservoirNumeric > 20 ? 'Cheio' : 'Vazio';
+    // Simulate UV LED status (randomly toggle for simulation)
+    environmentalData.uvLedStatus = Math.random() > 0.5;
 }
 
 // Update dynamic data every 30 seconds
@@ -150,15 +165,32 @@ app.post('/toggleLED', (req, res) => {
     res.json({ message: `Irrigation toggled for ${plant}` });
 });
 
-// Set plant name
-app.post('/setPlantName', (req, res) => {
-    console.log('Renaming plant');
-    const { plant, name } = req.body;
-    if (!plant || !name || !plants[plant]) {
-        return res.status(400).json({ message: 'Plant and name are required' });
+// Toggle UV LED for a specific plant
+app.post('/toggleUVLED', (req, res) => {
+    const plant = req.query.plant;
+    if (!plant || !plants[plant]) {
+        return res.status(400).json({ message: `Plant ${plant} not found` });
     }
-    plants[plant].name = name;
-    res.json({ message: `Plant ${plant} renamed to ${name}` });
+    console.log(`Toggling UV LED for ${plant}`);
+    // Toggle UV LED status
+    environmentalData.uvLedStatus = !environmentalData.uvLedStatus;
+    res.json({ message: `UV LED toggled for ${plant}, now ${environmentalData.uvLedStatus ? 'Ligado' : 'Desligado'}` });
+});
+
+// Set plant data
+app.post('/setPlantData', (req, res) => {
+    const { plant, data } = req.body;
+    if (!plant || !data || !plants[plant]) {
+        return res.status(400).json({ message: 'Plant and data are required' });
+    }
+    console.log(`Setting plant data for ${plant}:`, data);
+    // Update plant data with the provided fields
+    plants[plant] = {
+        tipo_planta: data.tipo_planta,
+        metodo_irrigacao_ideal: data.metodo_irrigacao_ideal,
+        horarios_umidade_solo: data.horarios_umidade_solo
+    };
+    res.json({ message: `Plant data updated for ${plant}` });
 });
 
 // Start the server

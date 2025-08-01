@@ -34,6 +34,8 @@ h1 { text-align: center; color: #0066cc; }
 }
 .controle-umidade {
     display: flex;
+    gap: 10px; /* Espaçamento entre os botões */
+    justify-content: center;
 }
 button {
     padding: 10px 20px;
@@ -49,16 +51,15 @@ button:hover { background-color: #0052a3; }
     width: 90%;
     display: flex;
     justify-content: space-between;
-    gap: 20px; /* Matches control-panel gap */
+    gap: 20px;
 }
 .caixa-informacao {
-    background: #e7e7e7; /* Matches control-item background */
+    background: #e7e7e7;
     width: 33%;
-    padding: 10px; /* Matches control-item padding */
+    padding: 10px;
     box-sizing: border-box;
-    border-radius: 5px; /* Matches control-item border-radius */
-    text-align: center; /* Matches control-item text alignment */
-    
+    border-radius: 5px;
+    text-align: center;
 }
 .caixa-reservatorio {
     display: flex;
@@ -128,8 +129,6 @@ button:hover { background-color: #0052a3; }
     text-align: center;
     font-weight: bold;
 }
-
-/* --- ESTILOS ADICIONADOS PARA O POP-UP --- */
 .popup-overlay {
     position: fixed;
     top: 0;
@@ -137,12 +136,11 @@ button:hover { background-color: #0052a3; }
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
-    display: none; /* Começa escondido */
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
-
 .popup-content {
     background-color: #fff;
     padding: 25px;
@@ -152,7 +150,6 @@ button:hover { background-color: #0052a3; }
     max-width: 500px;
     position: relative;
 }
-
 .popup-close-btn {
     position: absolute;
     top: 10px;
@@ -164,9 +161,8 @@ button:hover { background-color: #0052a3; }
     cursor: pointer;
     padding: 0;
 }
-
 #popup-data pre {
-    background-color: #e9ecef; /* Combinando com o seu tema */
+    background-color: #e9ecef;
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 5px;
@@ -174,8 +170,6 @@ button:hover { background-color: #0052a3; }
     word-wrap: break-word;
     text-align: left;
 }
-
-/* Renomeando para corresponder ao HTML */
 .response-box {
     margin-top: 20px;
     text-align: center;

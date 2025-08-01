@@ -25,6 +25,7 @@ class LuminosidadeLux(BaseModel):
 
 # MODELO DE RESPOSTA ATUALIZADO
 class PlantDataResponse(BaseModel):
+    nome_nome_cientifico: str
     luminosidade_ideal_lux: LuminosidadeLux  # ATUALIZADO
     umidade_ar_ideal: str
     metodo_irrigacao_ideal: str
@@ -57,12 +58,12 @@ def get_plant_care_prompt(plant_name: str) -> str:
     # O prompt que definimos na Seção 1
     return f"""
 Atue como um especialista em botânica. Sua tarefa é retornar dados sobre uma planta em um formato JSON estrito. Não adicione nenhuma explicação ou texto fora do JSON.
-
 A planta é: "{plant_name}"
 
 Se o texto fornecido não for um nome de planta conhecido (popular ou científico), retorne exatamente: {{"erro": "Planta não encontrada"}}.
 
 Se for uma planta válida, forneça os seguintes dados:
+- "nome_nome_cientifico": Forneça o seu nome popular (se existir) junto com o nome científico entre parênteses, formatado com letras maiúsculas corretas (exemplo: Rosa Branca (Rosa alba)). seguido por ":{{tipo_planta}}".
 - "luminosidade_ideal_lux": Um objeto JSON com os valores mínimo e máximo de luminosidade em lux (lúmens por metro quadrado). Os valores devem ser números inteiros. Exemplo: {{"min": 10000, "max": 25000}}.
 - "umidade_ar_ideal": Uma string com a faixa de umidade do ar em porcentagem (ex: "60-80%").
 - "metodo_irrigacao_ideal": Responda apenas com "gotejamento" ou "agendado".
@@ -72,6 +73,7 @@ Se for uma planta válida, forneça os seguintes dados:
 
 O JSON de saída deve ser exatamente neste formato, sem ```json ou qualquer outra formatação:
 {{
+  "nome_nome_cientifico" : "...: tipo_planta",
   "luminosidade_ideal_lux": {{"min": 0, "max": 0}},
   "umidade_ar_ideal": "...",
   "metodo_irrigacao_ideal": "...",

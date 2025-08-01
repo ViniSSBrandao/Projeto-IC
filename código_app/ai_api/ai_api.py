@@ -52,12 +52,12 @@ def get_plant_care_prompt(plant_name: str) -> str:
     # O prompt que definimos anteriormente
     return f"""
 Atue como um especialista em botânica. Sua tarefa é retornar dados sobre uma planta em um formato JSON estrito. Não adicione nenhuma explicação ou texto fora do JSON.
-
 A planta é: "{plant_name}"
 
 Se o texto fornecido não for um nome de planta conhecido (popular ou científico), retorne exatamente: {{"erro": "Planta não encontrada"}}.
 
 Se for uma planta válida, forneça os seguintes dados:
+- "nome_nome_cientifico": Forneça o seu nome popular (se existir) junto com o nome científico entre parênteses, formatado com letras maiúsculas corretas (exemplo: Rosa Branca (Rosa alba)).
 - "luminosidade_ideal": Uma string descrevendo a luz ideal (ex: "Luz indireta brilhante" ou "Sol pleno").
 - "umidade_ar_ideal": Uma string com a faixa de umidade do ar em porcentagem (ex: "60-80%").
 - "metodo_irrigacao_ideal": Responda apenas com "gotejamento" ou "agendado".
@@ -67,6 +67,7 @@ Se for uma planta válida, forneça os seguintes dados:
 
 O JSON de saída deve ser exatamente neste formato, sem ```json ou qualquer outra formatação:
 {{
+  "nome_nome_cientifico" : "...",
   "luminosidade_ideal": "...",
   "umidade_ar_ideal": "...",
   "metodo_irrigacao_ideal": "...",
@@ -104,7 +105,8 @@ async def get_plant_care(plant_name: str):
         
         # Converte a string de resposta para um dicionário Python
         data = json.loads(cleaned_response_text)
-
+        print(data)
+        print("recieved response")
         # Verifica se a IA retornou o erro que instruímos
         if "erro" in data:
             raise HTTPException(status_code=404, detail=data["erro"])

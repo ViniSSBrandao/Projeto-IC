@@ -123,6 +123,7 @@ setInterval(updateDynamicData, 30000);
 // Get static plant data
 app.get('/getPlantData', (req, res) => {
     const plant = req.query.plant;
+    console.log(`[GET] /getPlantData | Plant: ${plant}`);
     if (!plant || !plants[plant]) {
         return res.status(400).json({ message: `Plant ${plant} not found` });
     }
@@ -132,6 +133,7 @@ app.get('/getPlantData', (req, res) => {
 // Get dynamic plant data
 app.get('/getDynamicData', (req, res) => {
     const plant = req.query.plant;
+    console.log(`[GET] /getDynamicData | Plant: ${plant}`);
     if (!plant || !dynamicData[plant]) {
         return res.status(400).json({ message: `Plant ${plant} not found` });
     }
@@ -144,47 +146,60 @@ app.get('/getDynamicData', (req, res) => {
 
 // Get environmental data
 app.get('/getEnvironmentalData', (req, res) => {
+    console.log(`[GET] /getEnvironmentalData`);
     res.json(environmentalData);
 });
 
 // Toggle LED for a specific plant
 app.post('/toggleLED', (req, res) => {
     const plant = req.query.plant;
+    console.log(`[POST] /toggleLED | Plant: ${plant}`);
     if (!plant || !plants[plant]) {
         return res.status(400).json({ message: `Plant ${plant} not found` });
     }
     console.log(`Toggling LED for ${plant}`);
-    // Simulate irrigation by increasing current humidity and setting pump status
     dynamicData[plant].currentHumidity = Math.min(100, dynamicData[plant].currentHumidity + 10);
     dynamicData[plant].timeToIrrigation = 24;
     environmentalData.pumpStatus = 'Operando';
-    // Simulate pump turning off after 5 seconds
     setTimeout(() => {
         environmentalData.pumpStatus = 'Desligada';
+        console.log(`Pump status set to Desligada for ${plant}`);
     }, 5000);
     res.json({ message: `Irrigation toggled for ${plant}` });
+});
+
+// Set plant name
+app.post('/setPlantName', (req, res) => {
+    console.log(`[POST] /setPlantName`);
+    const { plant, name } = req.body;
+    if (!plant || !name || !plants[plant]) {
+        return res.status(400).json({ message: 'Plant and name are required' });
+    }
+    console.log(`Renaming ${plant} to ${name}`);
+    plants[plant].name = name;
+    res.json({ message: `Plant ${plant} renamed to ${name}` });
 });
 
 // Toggle UV LED for a specific plant
 app.post('/toggleUVLED', (req, res) => {
     const plant = req.query.plant;
+    console.log(`[POST] /toggleUVLED | Plant: ${plant}`);
     if (!plant || !plants[plant]) {
         return res.status(400).json({ message: `Plant ${plant} not found` });
     }
-    console.log(`Toggling UV LED for ${plant}`);
-    // Toggle UV LED status
     environmentalData.uvLedStatus = !environmentalData.uvLedStatus;
+    console.log(`UV LED toggled for ${plant} → ${environmentalData.uvLedStatus ? 'Ligado' : 'Desligado'}`);
     res.json({ message: `UV LED toggled for ${plant}, now ${environmentalData.uvLedStatus ? 'Ligado' : 'Desligado'}` });
 });
 
 // Set plant data
 app.post('/setPlantData', (req, res) => {
+    console.log(`[POST] /setPlantData`);
     const { plant, data } = req.body;
     if (!plant || !data || !plants[plant]) {
         return res.status(400).json({ message: 'Plant and data are required' });
     }
-    console.log(`Setting plant data for ${plant}:`, data);
-    // Update plant data with the provided fields
+    console.log(`Setting data for ${plant}:`, data);
     plants[plant] = {
         tipo_planta: data.tipo_planta,
         metodo_irrigacao_ideal: data.metodo_irrigacao_ideal,
@@ -192,7 +207,6 @@ app.post('/setPlantData', (req, res) => {
     };
     res.json({ message: `Plant data updated for ${plant}` });
 });
-
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

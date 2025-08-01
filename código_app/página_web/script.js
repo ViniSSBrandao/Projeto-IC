@@ -80,11 +80,35 @@ async function submitPlantName() {
         enqueueRequest(() => sendDataToArduino(selectedPlant, plantData));
         responseDiv.innerText = `Dados de "${plantData.nome_nome_cientifico}" atualizados e enviados para o Arduino!`;
     } catch (error) {
-        console.error('Erro no processo de atualização da planta:', error);
-        responseDiv.innerText = `Erro: ${error.message}`;
-        showPopup(`<p style="color: red;"><b>Erro:</b> ${error.message}</p>`);
+        console.warn('LLM indisponível. Usando dados falsos.');
+        responseDiv.innerText = `⚠️ LLM indisponível. Dados simulados serão utilizados.`;
+
+        const fakeData = {
+            "nome_nome_cientifico": "Manjericão (Ocimum basilicum): Hortaliça",
+            "luminosidade_ideal": "Sol pleno",
+            "umidade_ar_ideal": "50-60%",
+            "metodo_irrigacao_ideal": "gotejamento",
+            "horarios_umidade_solo": {
+                "06:00": "70%",
+                "12:00": "50%",
+                "18:00": "70%",
+                "23:00": "40%"
+            },
+            "temperatura_ideal_celsius": "20-28°C",
+            "tipo_planta": "Hortaliça",
+            "luminosidade_ideal_lux": {
+                min: 10000,
+                max: 25000
+            }
+        };
+
+        const formattedJson = `<pre>${JSON.stringify(fakeData, null, 2)}</pre>`;
+        showPopup(formattedJson);
+        updatePlantCardUI(selectedPlant, fakeData);
+        enqueueRequest(() => sendDataToArduino(selectedPlant, fakeData));
     }
 }
+
 
 async function sendDataToArduino(plantId, data) {
     console.log(`Enviando para o Arduino (${plantId}):`, data);

@@ -67,7 +67,7 @@ Se for uma planta válida, forneça os seguintes dados:
 
 O JSON de saída deve ser exatamente neste formato, sem ```json ou qualquer outra formatação:
 {{
-  "nome_nome_cientifico" : "...",
+  "nome_nome_cientifico" : "...: tipo_planta",
   "luminosidade_ideal": "...",
   "umidade_ar_ideal": "...",
   "metodo_irrigacao_ideal": "...",

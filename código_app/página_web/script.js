@@ -8,6 +8,7 @@ const updateInterval = 5000; // 5 segundos
 let requestQueue = [];
 let isProcessingQueue = false;
 let selectedPlant = '';
+let plantIdealLuminosity = { min: 10000, max: 25000 }; // Valores padrão para evitar erros
 
 // --- ELEMENTOS DO DOM ---
 const responseDiv = document.getElementById('response');
@@ -105,8 +106,11 @@ function updatePlantCardUI(plantId, data) {
     const plantIndex = plants.indexOf(plantId) + 1;
     document.getElementById(`plant${plantIndex}-name`).innerText = data.nome_nome_cientifico;
     const umidadeIdeal = Object.values(data.horarios_umidade_solo)[0] || 'N/A';
-    document.getElementById(`plant${plantIndex}-ideal-humidity`).innerText = `${umidadeIdeal}`;
+    document.getElementById(`plant${plantIndex}-ideal-humidity`).innerText = `Umidade do solo Ideal${umidadeIdeal}`;
     document.getElementById(`plant${plantIndex}-irrigation-type`).innerText = `Tipo de irrigação: ${data.metodo_irrigacao_ideal}`;
+    // Atualiza a luminosidade ideal
+    plantIdealLuminosity = data.luminosidade_ideal_lux;
+    document.getElementById('luminosidade-ideal').innerText = `Luminosidade Ideal: ${data.luminosidade_ideal_lux.min}-${data.luminosidade_ideal_lux.max} lx`;
 }
 
 // --- CONTROLE DO LED UV ---
@@ -148,9 +152,10 @@ async function fetchDynamicData() {
         await enqueueRequest(async () => {
             try {
                 const response = await fetch(`${arduinoIP}/getDynamicData?plant=${encodeURIComponent(plant)}`);
+                console.log(response);
                 const data = await response.json();
                 const plantIndex = plants.indexOf(plant) + 1;
-                document.getElementById(`plant${plantIndex}-current-humidity`).innerText = `${data.currentHumidity}%`;
+                document.getElementById(`plant${plantIndex}-current-humidity`).innerText = `Umidade do solo atual: ${data.currentHumidity}%`;
                 document.getElementById(`plant${plantIndex}-time-to-irrigation`).innerText = `Tempo estimado: ${data.timeToIrrigation}`;
                 document.getElementById(`plant${plantIndex}-suitable-to-water`).innerText = `${plant} - Adequado para regar: ${data.isSuitableToWater ? 'Sim' : 'Não'}`;
                 
@@ -165,6 +170,16 @@ async function fetchDynamicData() {
                     document.getElementById('uv-led-status').innerText = `Status do LED UV: ${envData.uvLedStatus ? 'Ligado' : 'Desligado'}`;
                     document.getElementById('temperatura').innerText = `Temperatura: ${envData.temperature}°C`;
                     document.getElementById('umidade-atmosferica').innerText = `Umidade atmosférica: ${envData.atmosphericHumidity}%`;
+                    // Atualiza o status da luminosidade
+                    let luminosityStatus = 'Carregando...';
+                    if (envData.luminosity < plantIdealLuminosity.min) {
+                        luminosityStatus = 'Abaixo';
+                    } else if (envData.luminosity > plantIdealLuminosity.max) {
+                        luminosityStatus = 'Acima';
+                    } else {
+                        luminosityStatus = 'OK';
+                    }
+                    document.getElementById('luminosidade-status').innerText = `Status da Luminosidade: ${luminosityStatus}`;
                 }
             } catch (error) {
                 console.error(`Erro ao carregar dados dinâmicos da ${plant}`);

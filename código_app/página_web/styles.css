@@ -34,7 +34,7 @@ h1 { text-align: center; color: #0066cc; }
 }
 .controle-umidade {
     display: flex;
-    gap: 10px; /* Espaçamento entre os botões */
+    gap: 10px;
     justify-content: center;
 }
 button {
@@ -175,3 +175,6 @@ button:hover { background-color: #0052a3; }
     text-align: center;
     font-weight: bold;
 }
+.luminosidade-abaixo { color: #ff4d4d; } /* Vermelho para luminosidade abaixo */
+.luminosidade-acima { color: #ff4d4d; } /* Vermelho para luminosidade acima */
+.luminosidade-ok { color: #28a745; } /* Verde para luminosidade ok */

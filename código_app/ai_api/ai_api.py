@@ -57,7 +57,7 @@ A planta é: "{plant_name}"
 Se o texto fornecido não for um nome de planta conhecido (popular ou científico), retorne exatamente: {{"erro": "Planta não encontrada"}}.
 
 Se for uma planta válida, forneça os seguintes dados:
-- "nome_nome_cientifico": Forneça o seu nome popular (se existir) junto com o nome científico entre parênteses, formatado com letras maiúsculas corretas (exemplo: Rosa Branca (Rosa alba)).
+- "nome_nome_cientifico": Forneça o seu nome popular (se existir) junto com o nome científico entre parênteses, formatado com letras maiúsculas corretas (exemplo: Rosa Branca (Rosa alba)). seguido por ": {{tipo_planta}}".
 - "luminosidade_ideal": Uma string descrevendo a luz ideal (ex: "Luz indireta brilhante" ou "Sol pleno").
 - "umidade_ar_ideal": Uma string com a faixa de umidade do ar em porcentagem (ex: "60-80%").
 - "metodo_irrigacao_ideal": Responda apenas com "gotejamento" ou "agendado".
